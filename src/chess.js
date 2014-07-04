@@ -67,8 +67,42 @@ requirejs(['jquery', 'jquery_ui'], function($, $ui)
             }
             }
 
+        function kingIsChecked()
+            {
+
+            oponents = [];
+            if (!white) {
+                oponents = getAllWhitesFilled();
+                king = $.inArray(piecesBlack[4], board);
+            } else {
+                oponents = getAllBlacksFilled();
+                king = $.inArray(piecesWhite[5], board);
+            }
+            for (i = 0; i < oponents.length; i++) {
+                oponentMoves = getMoves(oponents[i]);
+                if ($.inArray(king, oponentMoves) != -1) {
+                    return true;
+                }
+            }
+            return false;
+            }
+
+        function kingIsNotMated()
+            {
+            if (kingIsChecked()) {
+                console.log("checked");
+            }
+            return true;
+
+            }
+
         function kingIsNotDead()
             {
+            if (!white)
+                kingIsDead = $.inArray(piecesBlack[4], board) == -1;
+            else
+                kingIsDead = $.inArray(piecesWhite[5], board) == -1;
+
             return !kingIsDead;
             }
 
@@ -81,7 +115,7 @@ requirejs(['jquery', 'jquery_ui'], function($, $ui)
 
         $('body').on('click', '.highlighted', function()
         {
-            showMoves(board[parseInt($(this).attr("id"))], parseInt($(this).attr("id")));
+            showMoves(parseInt($(this).attr("id")));
             if (noPossibleMove()) {
                 $("#legend").html("not possible to move");
                 focusAgain();
@@ -131,120 +165,103 @@ requirejs(['jquery', 'jquery_ui'], function($, $ui)
 
             }
 
-        function showMoves(piece, index)
+        function getMoves(index)
+            {
+            moves = [];
+            if (piecesWhite[0] == board[index]) {
+                if (board[index + 8] == 0) {
+                    moves[moves.length] = parseInt(index + 8);
+
+                }
+                if (((index) % 8 != 1) && (board[index + 7] != 0) && ($.inArray(board[index + 7], piecesBlack) != -1)) {
+                    moves[moves.length] = parseInt(index + 7);
+
+                }
+                if (((index) % 8 != 0) && (board[index + 9] != 0) && ($.inArray(board[index + 9], piecesBlack) != -1)) {
+                    moves[moves.length] = parseInt(index + 9);
+
+                }
+
+            }
+
+            if (piecesBlack[8] == board[index]) {
+                if (board[index - 8] == 0) {
+                    moves[moves.length] = parseInt(index - 8);
+
+                }
+                if (((index) % 8 != 0) && (board[index - 7] != 0) && ($.inArray(board[index - 7 ], piecesWhite) != -1)) {
+                    moves[moves.length] = parseInt(index - 7);
+
+                }
+                if (((index) % 8 != 1) && (board[index - 9] != 0) && ($.inArray(board[index - 9], piecesWhite) != -1)) {
+                    moves[moves.length] = parseInt(index - 9);
+
+                }
+
+            }
+            return moves;
+            }
+
+        function showMoves(index)
             {
 
             UnFocusAllHighlighted();
 
-            console.log(((index + 7) % 8 != 1) && (board[index + 7] != 0) && ($.inArray(board[index + 7], piecesBlack) != -1));
-            console.log(((index + 9) % 8 != 1) && (board[index + 9] != 0) && ($.inArray(board[index + 9], piecesBlack) != -1));
-
-            if (piecesWhite[0] == piece) {
-                if (board[index + 8] == 0) {
-                    tdId = "#" + parseInt(index + 8);
-                    tdSource = "#" + parseInt(index);
-                    $(tdId).css("background", "yellow");
-                    $(tdId).addClass("possibleMove");
-                    $(tdSource).css("font-weight", "bold");
-                    $(tdSource).css("color", "green");
-                    $(tdSource).addClass("sourceMove");
-                }
-                if (((index) % 8 != 1) && (board[index + 7] != 0) && ($.inArray(board[index + 7], piecesBlack) != -1)) {
-                    tdId = "#" + parseInt(index + 7);
-                    tdSource = "#" + parseInt(index);
-                    $(tdId).css("background", "yellow");
-                    $(tdId).addClass("possibleMove");
-                    $(tdSource).css("font-weight", "bold");
-                    $(tdSource).css("color", "green");
-                    $(tdSource).addClass("sourceMove");
-                }
-                if (((index) % 8 != 0) && (board[index + 9] != 0) && ($.inArray(board[index + 9], piecesBlack) != -1)) {
-                    tdId = "#" + parseInt(index + 9);
-                    tdSource = "#" + parseInt(index);
-                    $(tdId).css("background", "yellow");
-                    $(tdId).addClass("possibleMove");
-                    $(tdSource).css("font-weight", "bold");
-                    $(tdSource).css("color", "green");
-                    $(tdSource).addClass("sourceMove");
-                }
-
+            moves = getMoves(index);
+            for (i = 0; i < moves.length; i++) {
+                tdId = "#" + parseInt(moves[i]);
+                tdSource = "#" + parseInt(index);
+                $(tdId).css("background", "yellow");
+                $(tdId).addClass("possibleMove");
+                $(tdSource).css("font-weight", "bold");
+                $(tdSource).css("color", "green");
+                $(tdSource).addClass("sourceMove");
             }
 
-            if (piecesBlack[8] == piece) {
-                if (board[index - 8] == 0) {
-                    tdId = "#" + parseInt(index - 8);
-                    tdSource = "#" + parseInt(index);
-                    $(tdId).css("background", "yellow");
-                    $(tdId).addClass("possibleMove");
-                    $(tdSource).css("font-weight", "bold");
-                    $(tdSource).css("color", "green");
-                    $(tdSource).addClass("sourceMove");
-                }
-                if (((index) % 8 != 0) && (board[index - 7] != 0) && ($.inArray(board[index - 7 ], piecesWhite) != -1)) {
-                    tdId = "#" + parseInt(index - 7);
-                    tdSource = "#" + parseInt(index);
-                    $(tdId).css("background", "yellow");
-                    $(tdId).addClass("possibleMove");
-                    $(tdSource).css("font-weight", "bold");
-                    $(tdSource).css("color", "green");
-                    $(tdSource).addClass("sourceMove");
-                }
-                if (((index) % 8 != 1) && (board[index - 9] != 0) && ($.inArray(board[index - 9], piecesWhite) != -1)) {
-                    tdId = "#" + parseInt(index - 9);
-                    tdSource = "#" + parseInt(index);
-                    $(tdId).css("background", "yellow");
-                    $(tdId).addClass("possibleMove");
-                    $(tdSource).css("font-weight", "bold");
-                    $(tdSource).css("color", "green");
-                    $(tdSource).addClass("sourceMove");
-                }
-
-            }
             }
 
         function focusAllBlacks()
             {
             UnFocusAllHighlighted();
-            blacks = getAllBlacksFilled();
-            for (i = 0; i < blacks.length; i++) {
-                if (canMove(blacks[i])) {
-                    tdId = "#" + blacks[i];
-                    $(tdId).css("font-weight", "bold");
-                    $(tdId).css("color", "blue");
-                    $(tdId).addClass("highlighted");
+            if (kingIsChecked()) {
+
+                $("#legend").html("black king checked: move the king!!");
+
+            } else {
+                blacks = getAllBlacksFilled();
+                for (i = 0; i < blacks.length; i++) {
+                    if (getMoves(blacks[i]).length > 0) {
+                        tdId = "#" + blacks[i];
+                        $(tdId).css("font-weight", "bold");
+                        $(tdId).css("color", "blue");
+                        $(tdId).addClass("highlighted");
+                    }
                 }
+
+                $("#legend").html("blacks move");
             }
 
-            $("#legend").html("blacks move");
-            }
-
-        function canMove(index)
-            {
-            if (board[index] == 0)
-                return false;
-            if (board[index] == piecesWhite[0]) {
-                return board[index + 8] == 0 || board[index + 7] != 0 || board[index + 9] != 0
-            }
-            if (board[index] == piecesBlack[8]) {
-                return board[index - 8] == 0 || board[index - 7] != 0 || board[index - 9] != 0
-            }
-
-            return false;
             }
 
         function focusAllWhites()
             {
             UnFocusAllHighlighted();
-            whites = getAllWhitesFilled();
-            for (i = 0; i < whites.length; i++) {
-                if (canMove(whites[i])) {
-                    tdId = "#" + whites[i];
-                    $(tdId).css("font-weight", "bold");
-                    $(tdId).css("color", "red");
-                    $(tdId).addClass("highlighted");
+            if (kingIsChecked()) {
+
+                $("#legend").html("white king checked: move the king!!");
+            } else {
+                whites = getAllWhitesFilled();
+                for (i = 0; i < whites.length; i++) {
+                    if (getMoves(whites[i]).length > 0) {
+                        tdId = "#" + whites[i];
+                        $(tdId).css("font-weight", "bold");
+                        $(tdId).css("color", "red");
+                        $(tdId).addClass("highlighted");
+                    }
                 }
+
+                $("#legend").html("whites move");
             }
-            $("#legend").html("whites move");
             }
 
         function getAllBlacksFilled()
@@ -278,7 +295,7 @@ requirejs(['jquery', 'jquery_ui'], function($, $ui)
 
         function nextMove()
             {
-            if (kingIsNotDead() && iterations < 1000) {
+            if (kingIsNotDead() && kingIsNotMated() && iterations < 1000) {
                 kingIsDead = false;
                 if (white) {
                     focusAllWhites();
