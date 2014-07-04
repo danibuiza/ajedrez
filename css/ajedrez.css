@@ -1,0 +1,40 @@
+
+
+#chess_board
+{
+    border : 5px solid #333;
+}
+
+#chess_board td
+{
+    background         : #FFF;
+    background         : -moz-linear-gradient(top, #FFF, #EEE);
+    background         : -webkit-gradient(linear, 0 0, 0 100%, from(#FFF), to(#EEE));
+    box-shadow         : inset 0 0 0 1px #FFF;
+    -moz-box-shadow    : inset 0 0 0 1px #FFF;
+    -webkit-box-shadow : inset 0 0 0 1px #FFF;
+    height             : 80px;
+    text-align         : center;
+    vertical-align     : middle;
+    width              : 80px;
+}
+
+.cell
+{
+    background      : #FFF;
+    color           : #000;
+    font-size       : 60px;
+    text-decoration : none;
+    text-shadow     : 0 1px #FFF;
+}
+
+#chess_board tr:nth-child(odd) td:nth-child(even),
+#chess_board tr:nth-child(even) td:nth-child(odd)
+{
+    background         : #CCC;
+    background         : -moz-linear-gradient(top, #CCC, #EEE);
+    background         : -webkit-gradient(linear, 0 0, 0 100%, from(#CCC), to(#EEE));
+    box-shadow         : inset 0 0 10px rgba(0, 0, 0, .4);
+    -moz-box-shadow    : inset 0 0 10px rgba(0, 0, 0, .4);
+    -webkit-box-shadow : inset 0 0 10px rgba(0, 0, 0, .4);
+}
