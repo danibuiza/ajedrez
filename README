@@ -1,54 +1,7 @@
-model
+64 positions on a board
 
-a board with 64 positions
+several jquery functions
 
-1 white band with 8 peons, 1 king, 1 queen, 2 horses, 2 bishops and 2 towers
+several helper functions
 
-1 black band with 8 peons, 1 king, 1 queen, 2 horses, 2 bishops and 2 towers
-
-an initialize method to put the pieces on the initial positions
-
-a move method to move a piece to a desired position: this one can be automatic (the program can choose) or manual passing piece and new position
-
-a validate method passing a piece an old position and a new position, validates if the movement is possible
-
-an isFree method passing a position
-
-a nextTurn method to decide what band should move
-
-an is King on danger method
-
-an is Queen on danger method
-
-a kill method passing a piece and a position, piece is then eliminated from the band or put as not available
-
-an available method for one piece
-
-for one piece and position, all possible movements
-    peon in position 5 can move to 5+8 if free or to 5+7 or 5+9 if are not free (within the limits of the board => result < 64)
-
-    torre in position 5 can move to 5+(8*x) siempre que no se salga de los limites y en las positions 5+(8*x) no haya nadie, si hay alguien ese es el limite de x
-        tambien puede mover a 5-(8*x)
-        tambien a 5+-(1*x) siempre que el resultado sea 0-8 => 8%5 = 3 x puede ser hasta 2 y 5-8=0 asi que el minimo es 0, 20-8=12 8%12=4 ->12+4=16 y 20%8=4-> x maximo es 24-1=23
-
-     el rey es +-1 +-8 +-9 +-7
-
-     el caballo es +15 +17 -15 -17 +10 +6 -10 -6, puede saltar asi que no hay que comprobar nada
-
-view
-a canvas with 64 cells black and white like a chess board with numbers and letters in the borders
-
-a draw method that draws the current status of the model
-
-if a cell is not free, this cell can listen for drag events -> take
-
-if a cell is free, this cell can listen for drop events -> move
-
-if a cell is not free, this cell can listen for drop events -> kill
-
-
-
-control
-when you pick a piece and move it a validation of the movement should be done and an analysis of the dangers for the queen and the king have to be done
-
-once whites listen for drag and drop, afterwards, blacks and so on
+controlled by backbone
