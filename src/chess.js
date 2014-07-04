@@ -159,6 +159,63 @@ requirejs(['jquery', 'jquery_ui'], function($, $ui)
 
         function deleteMarkers()
             {
+            for (i = 1; i <= 8; i++) {
+                if (i % 2 == 0)
+                    $("#" + i).css("background", "#ccc");
+                else
+                    $("#" + i).css("background", "#fff");
+
+            }
+            for (i = 9; i <= 16; i++) {
+
+                if (i % 2 == 1)
+                    $("#" + i).css("background", "#ccc");
+                else
+                    $("#" + i).css("background", "#fff");
+            }
+            for (i = 17; i <= 24; i++) {
+
+                if (i % 2 == 0)
+                    $("#" + i).css("background", "#ccc");
+                else
+                    $("#" + i).css("background", "#fff");
+            }
+            for (i = 25; i <= 32; i++) {
+
+                if (i % 2 == 1)
+                    $("#" + i).css("background", "#ccc");
+                else
+                    $("#" + i).css("background", "#fff");
+            }
+            for (i = 33; i <= 40; i++) {
+
+                if (i % 2 == 0)
+                    $("#" + i).css("background", "#ccc");
+                else
+                    $("#" + i).css("background", "#fff");
+            }
+            for (i = 41; i <= 48; i++) {
+
+                if (i % 2 == 1)
+                    $("#" + i).css("background", "#ccc");
+                else
+                    $("#" + i).css("background", "#fff");
+            }
+            for (i = 49; i <= 56; i++) {
+
+                if (i % 2 == 0)
+                    $("#" + i).css("background", "#ccc");
+                else
+                    $("#" + i).css("background", "#fff");
+            }
+            for (i = 57; i <= 64; i++) {
+
+                if (i % 2 == 1)
+                    $("#" + i).css("background", "#ccc");
+                else
+                    $("#" + i).css("background", "#fff");
+            }
+
             $(".sourceMove").removeClass("sourceMove");
             $(".possibleMove").css("background", "red");
             $(".possibleMove").removeClass("possibleMove");
@@ -220,10 +277,26 @@ requirejs(['jquery', 'jquery_ui'], function($, $ui)
 
             }
 
+        function getKing()
+            {
+            piece = piecesWhite [5];
+            if (!white)
+                piece = piecesBlack[4];
+
+            return $.inArray(piece, board);
+
+            }
+
         function focusAllBlacks()
             {
             UnFocusAllHighlighted();
             if (kingIsChecked()) {
+                king = getKing();
+                console.log(king);
+                tdId = "#" + king;
+                $(tdId).css("font-weight", "bold");
+                $(tdId).css("color", "green");
+                $(tdId).addClass("highlighted_king");
 
                 $("#legend").html("black king checked: move the king!!");
 
@@ -247,7 +320,12 @@ requirejs(['jquery', 'jquery_ui'], function($, $ui)
             {
             UnFocusAllHighlighted();
             if (kingIsChecked()) {
-
+                king = getKing();
+                console.log(king);
+                tdId = "#" + king;
+                $(tdId).css("font-weight", "bold");
+                $(tdId).css("color", "blue");
+                $(tdId).addClass("highlighted_king");
                 $("#legend").html("white king checked: move the king!!");
             } else {
                 whites = getAllWhitesFilled();
