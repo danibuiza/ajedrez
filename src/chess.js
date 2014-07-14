@@ -12,11 +12,25 @@ requirejs(['jquery', 'jquery_ui'], function($, $ui)
 
         iterations = 0;
 
-        piecesNames = [  "pawnwhite" , "rookwhite", "nightwhite", "bishopwhite", "kingwhite", "wifewhite", "bishopwhite", "nightwhite" , "rookwhite", "rookblack", "nightblack", "bishopblack", "kingblack", "queenblack", "bishopblack", "nightblack", "rookblack", "pawnblack"    ];
+        pawnWhite = "&#9817";
+        rookWhite = "&#9814";
+        nightWhite = "&#9816";
+        bishopWhite = "&#9815";
+        kingWhite = "&#9812";
+        queenWhite = "&#9813";
 
-        piecesWhite = [  "&#9817", "&#9814", "&#9816", "&#9815", "&#9813", "&#9812", "&#9815", "&#9816", "&#9814" ];
+        pawnBlack = "&#9823";
+        rookBlack = "&#9820";
+        nightBlack = "&#9822";
+        bishopBlack = "&#9821";
+        kingBlack = "&#9818";
+        queenBlack = "&#9819";
 
-        piecesBlack = [   "&#9820", "&#9822", "&#9821", "&#9819", "&#9818", "&#9821", "&#9822", "&#9820", "&#9823" ];
+        empty = 0;
+
+        piecesWhite = [  pawnWhite, rookWhite, nightWhite , bishopWhite , queenWhite, kingWhite, bishopWhite, nightWhite, rookWhite ];
+
+        piecesBlack = [   rookBlack, nightBlack, bishopBlack, queenBlack, kingBlack, bishopBlack, nightBlack, rookBlack, pawnBlack ];
 
         board = [0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0,
@@ -27,66 +41,90 @@ requirejs(['jquery', 'jquery_ui'], function($, $ui)
             0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0];
 
+        /*sets the board in the initial status*/
         function resetBoard()
             {
-            for (i = 1; i <= 8; i++) {
+            for (var i = 1; i <= 8; i++) {
                 board [i] = piecesWhite[i];
             }
-            for (i = 9; i <= 16; i++) {
-                board [i] = piecesWhite[0];
+            for (var i = 9; i <= 16; i++) {
+                board [i] = pawnWhite;
             }
 
-            for (j = 64, i = 0; j > 56; j--, i++) {
+            for (var j = 64, i = 0; j > 56; j--, i++) {
                 board [j] = piecesBlack[i];
             }
 
-            for (j = 56; j > 48; j--) {
-                board [j] = piecesBlack[8];
+            for (var j = 56; j > 48; j--) {
+                board [j] = pawnBlack;
             }
 
-            for (i = 1; i <= 64; i++) {
-                if (board[i] != 0) {
-                    tdId = "#" + i;
+            for (var i = 1; i <= 64; i++) {
+                if (board[i] != empty) {
+                    var tdId = "#" + i;
                     $(tdId).html(board[i]);
                 }
             }
 
             };
 
+        /*draws current status of the board*/
         function drawBoard()
             {
 
-            for (i = 1; i <= 64; i++) {
-                if (board[i] != 0) {
-                    tdId = "#" + i;
+            for (var i = 1; i <= 64; i++) {
+                var tdId = "#" + i;
+                if (board[i] != empty) {
                     $(tdId).html(board[i]);
                 } else {
-                    tdId = "#" + i;
                     $(tdId).html("");
                 }
             }
             }
 
+        /*returns true is the king is checked, flase otherwise*/
         function kingIsChecked()
             {
 
-            oponents = [];
-            if (!white) {
+            var oponents = [];
+            if (white) {
                 oponents = getAllWhitesFilled();
-                king = $.inArray(piecesBlack[4], board);
             } else {
                 oponents = getAllBlacksFilled();
-                king = $.inArray(piecesWhite[5], board);
             }
-            for (i = 0; i < oponents.length; i++) {
-                oponentMoves = getMoves(oponents[i]);
-                if ($.inArray(king, oponentMoves) != -1) {
+
+            for (var i = 0; i < oponents.length; i++) {
+                var oponentMoves = getMoves(oponents[i]);
+
+                if ($.inArray(getNextKing(), oponentMoves) != -1) {
                     return true;
                 }
             }
             return false;
             }
 
+        /*returns true is the king is checked, flase otherwise*/
+        function kingIsCheckedVirtual()
+            {
+
+            var oponentsVirtual = [];
+            if (white) {
+                oponentsVirtual = getAllWhitesFilled();
+            } else {
+                oponentsVirtual = getAllBlacksFilled();
+            }
+
+            for (var i = 0; i < oponentsVirtual.length; i++) {
+                var oponentMovesVirtual = getMovesVirtual(oponentsVirtual[i]);
+
+                if ($.inArray(getNextKing(), oponentMovesVirtual) != -1) {
+                    return true;
+                }
+            }
+            return false;
+            }
+
+        /*if king is checked and mated returns true*/
         function kingIsNotMated()
             {
             if (kingIsChecked()) {
@@ -96,16 +134,18 @@ requirejs(['jquery', 'jquery_ui'], function($, $ui)
 
             }
 
+        /*king is in the board?*/
         function kingIsNotDead()
             {
             if (!white)
-                kingIsDead = $.inArray(piecesBlack[4], board) == -1;
+                kingIsDead = $.inArray(kingBlack, board) == -1;
             else
-                kingIsDead = $.inArray(piecesWhite[5], board) == -1;
+                kingIsDead = $.inArray(kingWhite, board) == -1;
 
             return !kingIsDead;
             }
 
+        /*resets highlights*/
         function UnFocusAllHighlighted()
             {
             $(".highlighted").css("font-weight", "normal");
@@ -113,25 +153,7 @@ requirejs(['jquery', 'jquery_ui'], function($, $ui)
             $(".highlighted").removeClass("highlighted");
             }
 
-        $('body').on('click', '.highlighted', function()
-        {
-            showMoves(parseInt($(this).attr("id")));
-            if (noPossibleMove()) {
-                $("#legend").html("not possible to move");
-                focusAgain();
-            }
-        });
-
-        $('body').on('click', '.sourceMove', function()
-        {
-            $(".sourceMove").removeClass("sourceMove");
-
-            $(".possibleMove").css("background", "#DDD");
-            $(".possibleMove").removeClass("possibleMove");
-            focusAgain();
-
-        });
-
+        /*re focus again the pieces that can move*/
         function focusAgain()
             {
             if (!white)
@@ -140,75 +162,65 @@ requirejs(['jquery', 'jquery_ui'], function($, $ui)
                 focusAllBlacks();
             }
 
-        $('body').on('click', '.possibleMove', function()
-        {
-            idSource = parseInt($("body").find(".sourceMove").attr("id"));
-            idDestiny = parseInt($(this).attr("id"));
-            board[idDestiny] = board[idSource];
-            board[idSource] = 0;
-
-            deleteMarkers();
-            drawBoard();
-            nextMove();
-        });
-
+        /*if it is not possible to move*/
         function noPossibleMove()
             {
             return ($('body').find(".possibleMove").length) == 0;
             }
 
-        function deleteMarkers()
+        /*deletes all markers from the board*/
+        function deleteMarkers(destiny)
             {
-            for (i = 1; i <= 8; i++) {
+            for (var i = 1; i <= 8; i++) {
                 if (i % 2 == 0)
                     $("#" + i).css("background", "#ccc");
                 else
                     $("#" + i).css("background", "#fff");
 
             }
-            for (i = 9; i <= 16; i++) {
+            for (var i = 9; i <= 16; i++) {
 
                 if (i % 2 == 1)
                     $("#" + i).css("background", "#ccc");
                 else
                     $("#" + i).css("background", "#fff");
             }
-            for (i = 17; i <= 24; i++) {
+            for (var i = 17; i <= 24; i++) {
 
                 if (i % 2 == 0)
                     $("#" + i).css("background", "#ccc");
                 else
                     $("#" + i).css("background", "#fff");
             }
-            for (i = 25; i <= 32; i++) {
+            for (var i = 25; i <= 32; i++) {
 
                 if (i % 2 == 1)
                     $("#" + i).css("background", "#ccc");
                 else
                     $("#" + i).css("background", "#fff");
             }
-            for (i = 33; i <= 40; i++) {
+            for (var i = 33; i <= 40; i++) {
 
                 if (i % 2 == 0)
                     $("#" + i).css("background", "#ccc");
                 else
                     $("#" + i).css("background", "#fff");
             }
-            for (i = 41; i <= 48; i++) {
+            for (var i = 41; i <= 48; i++) {
 
                 if (i % 2 == 1)
                     $("#" + i).css("background", "#ccc");
                 else
                     $("#" + i).css("background", "#fff");
             }
-            for (i = 49; i <= 56; i++) {
+            for (var i = 49; i <= 56; i++) {
 
                 if (i % 2 == 0)
                     $("#" + i).css("background", "#ccc");
                 else
                     $("#" + i).css("background", "#fff");
             }
-            for (i = 57; i <= 64; i++) {
+            for (var i = 57; i <= 64; i++) {
 
                 if (i % 2 == 1)
                     $("#" + i).css("background", "#ccc");
@@ -217,57 +229,394 @@ requirejs(['jquery', 'jquery_ui'], function($, $ui)
             }
 
             $(".sourceMove").removeClass("sourceMove");
-            $(".possibleMove").css("background", "red");
+            $("#" + destiny).css("background", "red");
             $(".possibleMove").removeClass("possibleMove");
 
             }
 
+        /*returns all possible moves*/
         function getMoves(index)
             {
-            moves = [];
-            if (piecesWhite[0] == board[index]) {
-                if (board[index + 8] == 0) {
+            var moves = [];
+            //peon blanco
+            if (pawnWhite == board[index]) {
+                if (index + 8 < 65 && board[index + 8] == 0) {
                     moves[moves.length] = parseInt(index + 8);
 
                 }
-                if (((index) % 8 != 1) && (board[index + 7] != 0) && ($.inArray(board[index + 7], piecesBlack) != -1)) {
+                if (index + 7 < 65 && ((index) % 8 != 1) && (board[index + 7] != 0) && ($.inArray(board[index + 7], piecesBlack) != -1)) {
                     moves[moves.length] = parseInt(index + 7);
 
                 }
-                if (((index) % 8 != 0) && (board[index + 9] != 0) && ($.inArray(board[index + 9], piecesBlack) != -1)) {
+                if (index + 9 < 65 && ((index) % 8 != 0) && (board[index + 9] != 0) && ($.inArray(board[index + 9], piecesBlack) != -1)) {
                     moves[moves.length] = parseInt(index + 9);
 
                 }
 
             }
-
-            if (piecesBlack[8] == board[index]) {
-                if (board[index - 8] == 0) {
+            //peon negro
+            if (pawnBlack == board[index]) {
+                if (index - 8 > 1 && board[index - 8] == 0) {
                     moves[moves.length] = parseInt(index - 8);
-
                 }
-                if (((index) % 8 != 0) && (board[index - 7] != 0) && ($.inArray(board[index - 7 ], piecesWhite) != -1)) {
+                if (index - 7 > 1 && ((index) % 8 != 0) && (board[index - 7] != 0) && ($.inArray(board[index - 7 ], piecesWhite) != -1)) {
                     moves[moves.length] = parseInt(index - 7);
 
                 }
-                if (((index) % 8 != 1) && (board[index - 9] != 0) && ($.inArray(board[index - 9], piecesWhite) != -1)) {
+                if (index - 9 > 1 && ((index) % 8 != 1) && (board[index - 9] != 0) && ($.inArray(board[index - 9], piecesWhite) != -1)) {
                     moves[moves.length] = parseInt(index - 9);
 
                 }
 
             }
+            //rey blanco
+            if (kingWhite == board[index]) {
+                if (index + 1 < 65 && board[index + 1] == 0 && ((index) % 8 != 0)) {
+
+                    if (canKingMoveThere(index + 1))
+                        moves[moves.length] = parseInt(index + 1);
+
+                }
+                if (index + 1 < 65 && board[index + 1] != 0 && ($.inArray(board[index + 1], piecesBlack) != -1) && ((index) % 8 != 0)) {
+
+                    if (canKingMoveThere(index + 1))
+                        moves[moves.length] = parseInt(index + 1);
+
+                }
+                if (index - 1 > 1 && board[index - 1] == 0 && ((index) % 8 != 1)) {
+
+                    if (canKingMoveThere(index - 1))
+                        moves[moves.length] = parseInt(index - 1);
+
+                }
+                if (index - 1 > 1 && board[index - 1] != 0 && ($.inArray(board[index - 1], piecesBlack) != -1) && ((index) % 8 != 1)) {
+
+                    if (canKingMoveThere(index - 1))
+                        moves[moves.length] = parseInt(index - 1);
+
+                }
+                if (index + 8 < 65 && board[index + 8] == 0) {
+                    if (canKingMoveThere(index + 8))
+                        moves[moves.length] = parseInt(index + 8);
+
+                }
+                if (index + 8 < 65 && board[index + 8] != 0 && ($.inArray(board[index + 8], piecesBlack) != -1)) {
+                    if (canKingMoveThere(index + 8))
+                        moves[moves.length] = parseInt(index + 8);
+
+                }
+                if (index + 7 < 65 && ((index) % 8 != 1) && (board[index + 7] == 0)) {
+                    if (canKingMoveThere(index + 7))
+                        moves[moves.length] = parseInt(index + 7);
+
+                }
+                if (index + 7 < 65 && ((index) % 8 != 1) && (board[index + 7] != 0) && ($.inArray(board[index + 7], piecesBlack) != -1)) {
+                    if (canKingMoveThere(index + 7))
+                        moves[moves.length] = parseInt(index + 7);
+
+                }
+                if (index + 9 < 65 && ((index) % 8 != 0) && (board[index + 9] != 0) && ($.inArray(board[index + 9], piecesBlack) != -1)) {
+                    if (canKingMoveThere(index + 9))
+                        moves[moves.length] = parseInt(index + 9);
+
+                }
+                if (index + 9 < 65 && ((index) % 8 != 0) && (board[index + 9] == 0)) {
+                    if (canKingMoveThere(index + 9))
+                        moves[moves.length] = parseInt(index + 9);
+
+                }
+                if (index - 8 > 1 && board[index - 8] == 0) {
+
+                    if (canKingMoveThere(index - 8))
+                        moves[moves.length] = parseInt(index - 8);
+
+                }
+                if (index - 8 > 1 && board[index - 8] != 0 && ($.inArray(board[index + 8], piecesBlack) != -1)) {
+
+                    if (canKingMoveThere(index - 8))
+                        moves[moves.length] = parseInt(index - 8);
+
+                }
+                if (index - 7 > 1 && ((index) % 8 != 0) && (board[index - 7] != 0) && ($.inArray(board[index - 7 ], piecesBlack) != -1)) {
+
+                    if (canKingMoveThere(index - 7))
+                        moves[moves.length] = parseInt(index - 7);
+
+                }
+                if (index - 7 > 1 && ((index) % 8 != 0) && (board[index - 7] == 0)) {
+                    if (canKingMoveThere(index - 7))
+                        moves[moves.length] = parseInt(index - 7);
+
+                }
+                if (index - 9 > 1 && ((index) % 8 != 1) && (board[index - 9] != 0) && ($.inArray(board[index - 9], piecesBlack) != -1)) {
+
+                    if (canKingMoveThere(index - 9))
+                        moves[moves.length] = parseInt(index - 9);
+
+                }
+                if (index - 9 > 1 && ((index) % 8 != 1) && (board[index - 9] == 0)) {
+                    if (canKingMoveThere(index - 9))
+                        moves[moves.length] = parseInt(index - 9);
+
+                }
+            }
+            //rey negro
+            if (kingBlack == board[index]) {
+                if (index + 1 < 65 && board[index + 1] == 0 && ((index) % 8 != 0)) {
+                    if (canKingMoveThere(index + 1))
+                        moves[moves.length] = parseInt(index + 1);
+
+                }
+                if (index + 1 < 65 && board[index + 1] != 0 && ($.inArray(board[index + 1], piecesWhite) != -1) && ((index) % 8 != 0)) {
+                    if (canKingMoveThere(index + 1))
+                        moves[moves.length] = parseInt(index + 1);
+
+                }
+                if (index - 1 > 1 && board[index - 1 ] == 0 && ((index) % 8 != 1)) {
+                    if (canKingMoveThere(index - 1))
+                        moves[moves.length] = parseInt(index - 1);
+
+                }
+                if (index - 1 > 1 && board[index - 1] != 0 && ($.inArray(board[index - 1], piecesWhite) != -1) && ((index) % 8 != 1)) {
+                    if (canKingMoveThere(index - 1))
+                        moves[moves.length] = parseInt(index - 1);
+
+                }
+                if (index + 8 < 65 && board[index + 8] == 0) {
+                    if (canKingMoveThere(index + 8))
+                        moves[moves.length] = parseInt(index + 8);
+
+                }
+                if (index + 8 < 65 && board[index + 8] != 0 && ($.inArray(board[index + 8], piecesWhite) != -1)) {
+                    if (canKingMoveThere(index + 8))
+                        moves[moves.length] = parseInt(index + 8);
+
+                }
+                if (index + 7 < 65 && ((index) % 8 != 1) && (board[index + 7] == 0)) {
+                    if (canKingMoveThere(index + 7))
+                        moves[moves.length] = parseInt(index + 7);
+
+                }
+                if (index + 7 < 65 && ((index) % 8 != 1) && (board[index + 7] != 0) && ($.inArray(board[index + 7], piecesWhite) != -1)) {
+                    if (canKingMoveThere(index + 7))
+                        moves[moves.length] = parseInt(index + 7);
+
+                }
+                if (index + 9 < 65 && ((index) % 8 != 0) && (board[index + 9] != 0) && ($.inArray(board[index + 9], piecesWhite) != -1)) {
+                    if (canKingMoveThere(index + 9))
+                        moves[moves.length] = parseInt(index + 9);
+
+                }
+                if (index + 9 < 65 && ((index) % 8 != 0) && (board[index + 9] == 0)) {
+                    if (canKingMoveThere(index + 9))
+                        moves[moves.length] = parseInt(index + 9);
+
+                }
+                if (index - 8 > 1 && board[index - 8] == 0) {
+                    if (canKingMoveThere(index - 8))
+                        moves[moves.length] = parseInt(index - 8);
+
+                }
+                if (index - 8 > 1 && board[index - 8] != 0 && ($.inArray(board[index + 8], piecesWhite) != -1)) {
+                    if (canKingMoveThere(index - 8))
+                        moves[moves.length] = parseInt(index - 8);
+
+                }
+                if (index - 7 > 1 && ((index) % 8 != 0) && (board[index - 7] != 0) && ($.inArray(board[index - 7 ], piecesWhite) != -1)) {
+                    if (canKingMoveThere(index - 7))
+                        moves[moves.length] = parseInt(index - 7);
+
+                }
+                if (index - 7 > 1 && ((index) % 8 != 0) && (board[index - 7] == 0)) {
+                    if (canKingMoveThere(index - 7))
+                        moves[moves.length] = parseInt(index - 7);
+
+                }
+                if (index - 9 > 1 && ((index) % 8 != 1) && (board[index - 9] != 0) && ($.inArray(board[index - 9], piecesWhite) != -1)) {
+                    if (canKingMoveThere(index - 9))
+                        moves[moves.length] = parseInt(index - 9);
+
+                }
+                if (index - 9 > 1 && ((index) % 8 != 1) && (board[index - 9] == 0)) {
+                    if (canKingMoveThere(index - 9))
+                        moves[moves.length] = parseInt(index - 9);
+
+                }
+            }
+
             return moves;
             }
 
+        /*returns all possible moves*/
+        function getMovesVirtual(index)
+            {
+            var movesVirtual = [];
+            //peon blanco
+            if (pawnWhite == board[index]) {
+                if (index + 8 < 65 && board[index + 8] == 0) {
+                    movesVirtual[movesVirtual.length] = parseInt(index + 8);
+
+                }
+                if (index + 7 < 65 && ((index) % 8 != 1) && (board[index + 7] != 0) && ($.inArray(board[index + 7], piecesBlack) != -1)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index + 7);
+
+                }
+                if (index + 9 < 65 && ((index) % 8 != 0) && (board[index + 9] != 0) && ($.inArray(board[index + 9], piecesBlack) != -1)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index + 9);
+
+                }
+
+            }
+            //peon negro
+            if (pawnBlack == board[index]) {
+                if (index - 8 > 1 && board[index - 8] == 0) {
+                    movesVirtual[movesVirtual.length] = parseInt(index - 8);
+                }
+                if (index - 7 > 1 && ((index) % 8 != 0) && (board[index - 7] != 0) && ($.inArray(board[index - 7 ], piecesWhite) != -1)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index - 7);
+
+                }
+                if (index - 9 > 1 && ((index) % 8 != 1) && (board[index - 9] != 0) && ($.inArray(board[index - 9], piecesWhite) != -1)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index - 9);
+
+                }
+
+            }
+            //rey blanco
+            if (kingWhite == board[index]) {
+                if (index + 1 < 65 && board[index + 1] == 0 && ((index) % 8 != 0)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index + 1);
+                }
+                if (index + 1 < 65 && board[index + 1] != 0 && ($.inArray(board[index + 1], piecesBlack) != -1) && ((index) % 8 != 0)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index + 1);
+                }
+                if (index - 1 > 1 && board[index - 1] == 0 && ((index) % 8 != 1)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index - 1);
+                }
+                if (index - 1 > 1 && board[index - 1] != 0 && ($.inArray(board[index - 1], piecesBlack) != -1) && ((index) % 8 != 1)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index - 1);
+                }
+                if (index + 8 < 65 && board[index + 8] == 0) {
+                    movesVirtual[movesVirtual.length] = parseInt(index + 8);
+                }
+                if (index + 8 < 65 && board[index + 8] != 0 && ($.inArray(board[index + 8], piecesBlack) != -1)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index + 8);
+                }
+                if (index + 7 < 65 && ((index) % 8 != 1) && (board[index + 7] == 0)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index + 7);
+                }
+                if (index + 7 < 65 && ((index) % 8 != 1) && (board[index + 7] != 0) && ($.inArray(board[index + 7], piecesBlack) != -1)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index + 7);
+                }
+                if (index + 9 < 65 && ((index) % 8 != 0) && (board[index + 9] != 0) && ($.inArray(board[index + 9], piecesBlack) != -1)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index + 9);
+                }
+                if (index + 9 < 65 && ((index) % 8 != 0) && (board[index + 9] == 0)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index + 9);
+                }
+                if (index - 8 > 1 && board[index - 8] == 0) {
+                    movesVirtual[movesVirtual.length] = parseInt(index - 8);
+                }
+                if (index - 8 > 1 && board[index - 8] != 0 && ($.inArray(board[index + 8], piecesBlack) != -1)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index - 8);
+                }
+                if (index - 7 > 1 && ((index) % 8 != 0) && (board[index - 7] != 0) && ($.inArray(board[index - 7 ], piecesBlack) != -1)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index - 7);
+                }
+                if (index - 7 > 1 && ((index) % 8 != 0) && (board[index - 7] == 0)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index - 7);
+
+                }
+                if (index - 9 > 1 && ((index) % 8 != 1) && (board[index - 9] != 0) && ($.inArray(board[index - 9], piecesBlack) != -1)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index - 9);
+                }
+                if (index - 9 > 1 && ((index) % 8 != 1) && (board[index - 9] == 0)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index - 9);
+                }
+            }
+            //rey negro
+            if (kingBlack == board[index]) {
+                if (index + 1 < 65 && board[index + 1] == 0 && ((index) % 8 != 0)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index + 1);
+                }
+                if (index + 1 < 65 && board[index + 1] != 0 && ($.inArray(board[index + 1], piecesWhite) != -1) && ((index) % 8 != 0)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index + 1);
+                }
+                if (index - 1 > 1 && board[index - 1 ] == 0 && ((index) % 8 != 1)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index - 1);
+                }
+                if (index - 1 > 1 && board[index - 1] != 0 && ($.inArray(board[index - 1], piecesWhite) != -1) && ((index) % 8 != 1)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index - 1);
+                }
+                if (index + 8 < 65 && board[index + 8] == 0) {
+                    movesVirtual[movesVirtual.length] = parseInt(index + 8);
+                }
+                if (index + 8 < 65 && board[index + 8] != 0 && ($.inArray(board[index + 8], piecesWhite) != -1)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index + 8);
+                }
+                if (index + 7 < 65 && ((index) % 8 != 1) && (board[index + 7] == 0)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index + 7);
+                }
+                if (index + 7 < 65 && ((index) % 8 != 1) && (board[index + 7] != 0) && ($.inArray(board[index + 7], piecesWhite) != -1)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index + 7);
+                }
+                if (index + 9 < 65 && ((index) % 8 != 0) && (board[index + 9] != 0) && ($.inArray(board[index + 9], piecesWhite) != -1)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index + 9);
+                }
+                if (index + 9 < 65 && ((index) % 8 != 0) && (board[index + 9] == 0)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index + 9);
+                }
+                if (index - 8 > 1 && board[index - 8] == 0) {
+                    movesVirtual[movesVirtual.length] = parseInt(index - 8);
+                }
+                if (index - 8 > 1 && board[index - 8] != 0 && ($.inArray(board[index + 8], piecesWhite) != -1)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index - 8);
+                }
+                if (index - 7 > 1 && ((index) % 8 != 0) && (board[index - 7] != 0) && ($.inArray(board[index - 7 ], piecesWhite) != -1)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index - 7);
+                }
+                if (index - 7 > 1 && ((index) % 8 != 0) && (board[index - 7] == 0)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index - 7);
+                }
+                if (index - 9 > 1 && ((index) % 8 != 1) && (board[index - 9] != 0) && ($.inArray(board[index - 9], piecesWhite) != -1)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index - 9);
+                }
+                if (index - 9 > 1 && ((index) % 8 != 1) && (board[index - 9] == 0)) {
+                    movesVirtual[movesVirtual.length] = parseInt(index - 9);
+                }
+            }
+
+            return movesVirtual;
+            }
+
+        /*returns true if the king can move there without being eaten*/
+        function canKingMoveThere(index)
+            {
+            var oldValue = board[index];
+            var oldPosKing = getKing();
+            var oldKingValue = board[oldPosKing];
+
+            board[index] = board [oldPosKing];
+            board[oldPosKing] = 0;
+            var checkedNewPosition = kingIsCheckedVirtual();
+
+            board[oldPosKing] = oldKingValue;
+            board[index] = oldValue;
+
+            return !checkedNewPosition;
+
+            }
+
+        /*shows all moves in the board*/
         function showMoves(index)
             {
 
             UnFocusAllHighlighted();
 
-            moves = getMoves(index);
-            for (i = 0; i < moves.length; i++) {
-                tdId = "#" + parseInt(moves[i]);
-                tdSource = "#" + parseInt(index);
+            var moves = getMoves(index);
+            for (var i = 0; i < moves.length; i++) {
+                var tdId = "#" + parseInt(moves[i]);
+                var tdSource = "#" + parseInt(index);
                 $(tdId).css("background", "yellow");
                 $(tdId).addClass("possibleMove");
                 $(tdSource).css("font-weight", "bold");
@@ -277,23 +626,34 @@ requirejs(['jquery', 'jquery_ui'], function($, $ui)
 
             }
 
+        /*returns king position*/
         function getKing()
             {
-            piece = piecesWhite [5];
+            var piece = kingWhite;
             if (!white)
-                piece = piecesBlack[4];
+                piece = kingBlack;
 
             return $.inArray(piece, board);
 
             }
 
+        /*returns king position in the next move*/
+        function getNextKing()
+            {
+            var piece = kingWhite;
+            if (white)
+                piece = kingBlack;
+
+            return $.inArray(piece, board);
+
+            }
+
+        /*focus blacks*/
         function focusAllBlacks()
             {
             UnFocusAllHighlighted();
             if (kingIsChecked()) {
-                king = getKing();
-                console.log(king);
-                tdId = "#" + king;
+                var tdId = "#" + getKing();
                 $(tdId).css("font-weight", "bold");
                 $(tdId).css("color", "green");
                 $(tdId).addClass("highlighted_king");
@@ -301,10 +661,10 @@ requirejs(['jquery', 'jquery_ui'], function($, $ui)
                 $("#legend").html("black king checked: move the king!!");
 
             } else {
-                blacks = getAllBlacksFilled();
-                for (i = 0; i < blacks.length; i++) {
+                var blacks = getAllBlacksFilled();
+                for (var i = 0; i < blacks.length; i++) {
                     if (getMoves(blacks[i]).length > 0) {
-                        tdId = "#" + blacks[i];
+                        var tdId = "#" + blacks[i];
                         $(tdId).css("font-weight", "bold");
                         $(tdId).css("color", "blue");
                         $(tdId).addClass("highlighted");
@@ -316,22 +676,21 @@ requirejs(['jquery', 'jquery_ui'], function($, $ui)
 
             }
 
+        /*focus whites*/
         function focusAllWhites()
             {
             UnFocusAllHighlighted();
             if (kingIsChecked()) {
-                king = getKing();
-                console.log(king);
-                tdId = "#" + king;
+                var tdId = "#" + getKing();
                 $(tdId).css("font-weight", "bold");
                 $(tdId).css("color", "blue");
                 $(tdId).addClass("highlighted_king");
                 $("#legend").html("white king checked: move the king!!");
             } else {
-                whites = getAllWhitesFilled();
-                for (i = 0; i < whites.length; i++) {
+                var whites = getAllWhitesFilled();
+                for (var i = 0; i < whites.length; i++) {
                     if (getMoves(whites[i]).length > 0) {
-                        tdId = "#" + whites[i];
+                        var tdId = "#" + whites[i];
                         $(tdId).css("font-weight", "bold");
                         $(tdId).css("color", "red");
                         $(tdId).addClass("highlighted");
@@ -344,8 +703,8 @@ requirejs(['jquery', 'jquery_ui'], function($, $ui)
 
         function getAllBlacksFilled()
             {
-            blacksFilled = [];
-            for (i = 1; i <= 64; i++) {
+            var blacksFilled = [];
+            for (var i = 1; i <= 64; i++) {
                 if ($.inArray(board[i], piecesBlack) != -1) {
 
                     blacksFilled[blacksFilled.length] = i;
@@ -356,8 +715,8 @@ requirejs(['jquery', 'jquery_ui'], function($, $ui)
 
         function getAllWhitesFilled()
             {
-            whitesFilled = [];
-            for (i = 1; i <= 64; i++) {
+            var whitesFilled = [];
+            for (var i = 1; i <= 64; i++) {
                 if ($.inArray(board[i], piecesWhite) != -1) {
 
                     whitesFilled[whitesFilled.length] = i;
@@ -389,6 +748,49 @@ requirejs(['jquery', 'jquery_ui'], function($, $ui)
                 finished();
             }
             }
+
+        /*events*/
+        $('body').on('click', '.highlighted', function()
+        {
+
+            showMoves(parseInt($(this).attr("id")));
+            if (noPossibleMove()) {
+                $("#legend").html("not possible to move");
+                focusAgain();
+            }
+        });
+
+        $('body').on('click', '.highlighted_king', function()
+        {
+
+            showMoves(parseInt($(this).attr("id")));
+            if (noPossibleMove()) {
+                $("#legend").html("not possible to move");
+                focusAgain();
+            }
+        });
+
+        $('body').on('click', '.sourceMove', function()
+        {
+            $(".sourceMove").removeClass("sourceMove");
+
+            $(".possibleMove").css("background", "#DDD");
+            $(".possibleMove").removeClass("possibleMove");
+            focusAgain();
+
+        });
+
+        $('body').on('click', '.possibleMove', function()
+        {
+            var idSource = parseInt($("body").find(".sourceMove").attr("id"));
+            var idDestiny = parseInt($(this).attr("id"));
+            board[idDestiny] = board[idSource];
+            board[idSource] = 0;
+
+            deleteMarkers(idDestiny);
+            drawBoard();
+            nextMove();
+        });
 
         /*here is the game going on*/
         resetBoard();
